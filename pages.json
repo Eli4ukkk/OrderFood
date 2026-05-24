@@ -1,0 +1,111 @@
+{
+	"easycom": {
+		// 匹配所有以 'u-' 开头的组件，并自动指向 uView 的组件目录
+		// 采用 npm 安装的方式
+		"^u-(.*)": "uview-ui/components/u-$1/u-$1.vue"
+	},
+	
+	"pages": [ //pages数组中第一项表示应用启动页，参考：https://uniapp.dcloud.io/collocation/pages
+		{
+			"path": "pages/index/index",
+			"style": {
+				"navigationBarTitleText": "uni-app"
+			}
+		},
+		
+		{
+			"path": "pages/index/1",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		
+		{
+			"path": "pages/index/2",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		
+		{
+			"path": "pages/index/3",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		// 管理员
+		{
+			"path": "pages/index/manager/3",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		{
+			"path": "pages/index/manager/unorder",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		{
+			"path": "pages/index/manager/orderprice",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		{
+			"path": "pages/index/manager/download",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		{
+			"path": "pages/index/manager/stonestatus",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		},
+		{
+			"path": "pages/index/manager/foodstatus",
+			"style": {
+				"navigationBarTitleText": "美尔途订餐"
+			}
+		}
+	],
+	
+	"tabBar": {
+	    "color": "#000000",          // 未选中文字颜色
+	    "selectedColor": "#000000", // 选中文字颜色
+	    "backgroundColor": "#ffffff", // 背景色
+	    // "borderStyle": "black",
+	    "list": [
+	      {
+	        "pagePath": "pages/index/1",
+	        "text": "餐号",
+	        "iconPath": "static/tabBar/1-1.png",
+	        "selectedIconPath": "static/tabBar/1-2.png"
+	      },
+	      {
+	        "pagePath": "pages/index/2",
+	        "text": "点餐",
+	        "iconPath": "static/tabBar/2-1.png",
+	        "selectedIconPath": "static/tabBar/2-2.png"
+	      },
+	      {
+	        "pagePath": "pages/index/3",
+	        "text": "我的",
+	        "iconPath": "static/tabBar/3-1.png",
+	        "selectedIconPath": "static/tabBar/3-2.png"
+	      }
+	    ]
+	  },
+	
+	"globalStyle": {
+		"navigationBarTextStyle": "black",
+		"navigationBarTitleText": "uni-app",
+		"navigationBarBackgroundColor": "#F8F8F8",
+		"backgroundColor": "#F8F8F8",
+		
+		"navigationStyle": "custom"
+	},
+	"uniIdRouter": {}
+}
