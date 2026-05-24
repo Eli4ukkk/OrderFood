@@ -175,6 +175,84 @@
 				</view>
 			</view>
 		</view>
+
+		<!-- 删除确认弹窗 -->
+		<view
+		v-if="isDeleteDialogVisible"
+		@tap="cancelFoodDeleteDialog"
+		style="
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 999;
+		background-color: rgba(0, 0, 0, 0.18);"
+		class="flex align-center justify-center">
+			<view
+			@tap.stop
+				style="
+				width: 660rpx;
+				min-height: 500rpx;
+				background-color: #FFFFFF;
+				position: relative;
+				box-sizing: border-box;
+				padding: 104rpx 60rpx 60rpx 60rpx;"
+			class="radius flex flex-direction align-center">
+				<text
+				@tap="cancelFoodDeleteDialog"
+				style="
+				position: absolute;
+				right: 38rpx;
+				top: 34rpx;
+				font-size: 44rpx;
+				line-height: 44rpx;
+				color: #222222;"
+				class="cuIcon-close"></text>
+
+				<view
+				style="
+				font-size: 42rpx;
+				line-height: 60rpx;"
+				class="text-black text-bold">
+					确定删除吗？
+				</view>
+
+				<view
+				v-if="deleteTargetFood"
+				style="margin-top: 26rpx; font-size: 28rpx; line-height: 40rpx;"
+				class="text-gray text-center">
+					{{deleteTargetFood.name}}
+				</view>
+
+				<view
+				@tap="confirmFoodDelete"
+				style="
+				width: 380rpx;
+				height: 78rpx;
+				margin-top: 70rpx;
+				background-color: #D9D9D9;
+				border-radius: 40rpx;
+				font-size: 30rpx;"
+				class="flex align-center justify-center text-black text-bold">
+					确定
+				</view>
+
+				<view
+				@tap="cancelFoodDeleteDialog"
+				style="
+				width: 380rpx;
+				height: 78rpx;
+				margin-top: 24rpx;
+				background-color: #FFFFFF;
+				border: 2rpx solid #222222;
+				border-radius: 40rpx;
+				font-size: 30rpx;"
+				class="flex align-center justify-center text-black text-bold">
+					再想想
+				</view>
+			</view>
+		</view>
 		
 		<!-- 上/下架确认弹窗 -->
 		<view
@@ -272,8 +350,10 @@
 				isEditModule: false,
 				checkedFoodIds: [],
 				isStatusDialogVisible: false,
+				isDeleteDialogVisible: false,
 				pendingFoodStatus: true,
 				pendingFoodIds: [],
+				deleteTargetFood: null,
 				touchStartX: 0,
 				touchStartY: 0,
 				touchStartOffset: 0,
@@ -453,10 +533,43 @@
 				}
 			},
 			handleFoodDeleteTap(item) {
-				uni.showToast({
-					title: '下一步接入删除确认',
-					icon: 'none'
-				});
+				this.deleteTargetFood = item;
+				this.isDeleteDialogVisible = true;
+			},
+			cancelFoodDeleteDialog() {
+				this.isDeleteDialogVisible = false;
+				this.deleteTargetFood = null;
+			},
+			confirmFoodDelete() {
+				if(!this.deleteTargetFood) {
+					this.cancelFoodDeleteDialog();
+					return;
+				}
+				var deleteFoodId = this.deleteTargetFood.id;
+				this.requestDeleteFood(deleteFoodId);
+				this.removeFoodById(deleteFoodId);
+				this.resetFoodSwipeState();
+				this.cancelFoodDeleteDialog();
+			},
+			removeFoodById(foodId) {
+				var nextFoodList = [];
+				for(var i = 0; i < this.foodList.length; i++) {
+					if(this.foodList[i].id !== foodId) {
+						nextFoodList.push(this.foodList[i]);
+					}
+				}
+				this.foodList = nextFoodList;
+				this.removeCheckedFood(foodId);
+			},
+			removeCheckedFood(foodId) {
+				var checkedIndex = this.checkedFoodIds.indexOf(foodId);
+				if(checkedIndex !== -1) {
+					this.checkedFoodIds.splice(checkedIndex, 1);
+				}
+				this.syncFoodCheckedState();
+			},
+			requestDeleteFood(foodId) {
+				// TODO: 后续在这里请求后端删除菜品
 			},
 			initCheckedFoodsByStatus() {
 				var checkedIds = [];
