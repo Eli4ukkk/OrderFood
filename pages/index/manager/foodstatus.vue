@@ -102,11 +102,36 @@
 			<view 
 			v-for="(item, index) in foodList"
 			:key="item.id"
-			class="">
+			style="position: relative; overflow: hidden;"
+			class="margin-bottom-sm radius">
+				<view
+				v-if="isEditModule"
+				@tap.stop="handleFoodDeleteTap(item)"
+				style="
+				position: absolute;
+				left: 0;
+				top: 0;
+				bottom: 0;
+				width: 150rpx;
+				z-index: 1;
+				background-color: #F55B08;"
+				class="flex flex-direction align-center justify-center text-white radius">
+					<text
+					style="font-size: 38rpx; line-height: 42rpx;"
+					class="cuIcon-delete"></text>
+					<text
+					style="font-size: 24rpx; line-height: 34rpx; margin-top: 6rpx;">
+						删除
+					</text>
+				</view>
 				<!-- 卡片 -->
 				<view 
-				style="box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1);"
-				class="flex solid padding-sm margin-bottom-sm radius">
+				@touchstart="handleFoodTouchStart($event, item)"
+				@touchmove="handleFoodTouchMove($event, item)"
+				@touchend="handleFoodTouchEnd($event, item)"
+				@touchcancel="handleFoodTouchCancel(item)"
+				:style="'position: relative; z-index: 2; background-color: #FFFFFF; box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1); transform: translateX(' + (isEditModule ? item.swipeOffset : 0) + 'rpx); transition: ' + (item.isTouching ? 'none' : 'transform 220ms ease') + ';'"
+				class="flex solid padding-sm radius">
 					<image 
 					style="flex-shrink: 0; width: 150rpx; height: 150rpx;"
 					:src="item.image" mode="aspectFill"></image>
@@ -237,6 +262,10 @@
 		components: {
 			TopNav,
 		},
+		onLoad() {
+			var systemInfo = uni.getSystemInfoSync();
+			this.windowWidth = systemInfo.windowWidth || 375;
+		},
 		data() {
 			return {
 				topright: '编辑菜品',
@@ -245,6 +274,11 @@
 				isStatusDialogVisible: false,
 				pendingFoodStatus: true,
 				pendingFoodIds: [],
+				touchStartX: 0,
+				touchStartY: 0,
+				touchStartOffset: 0,
+				windowWidth: 375,
+				foodDeleteOffset: 150,
 				activeCheckStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #F55B08; background-color: #F55B08;',
 				inactiveCheckStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
 				foodList: [
@@ -255,6 +289,8 @@
 						status: true, 					// 已上架，已下架
 						checked: false,
 						checkStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
+						swipeOffset: 0,
+						isTouching: false,
 					},
 					{
 						id: 2,
@@ -263,6 +299,8 @@
 						status: false,
 						checked: false,
 						checkStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
+						swipeOffset: 0,
+						isTouching: false,
 					},
 				],
 			}
@@ -306,15 +344,119 @@
 			},
 			editfood() {
 				if(this.topright === '编辑菜品') {
-					this.topright = '删除菜品';
+					this.topright = '编辑中';
 					this.isEditModule = true;
 					this.initCheckedFoodsByStatus();
+					this.resetFoodSwipeState();
 				}
 				else {
 					this.topright = '编辑菜品'
 					this.isEditModule = false;
 					this.clearCheckedFoods();
+					this.resetFoodSwipeState();
 				}
+			},
+			handleFoodTouchStart(e, item) {
+				if(!this.isEditModule) {
+					return;
+				}
+				var touch = e.touches && e.touches[0];
+				if(!touch) {
+					return;
+				}
+				this.closeOtherFoodSwipe(item.id);
+				this.touchStartX = touch.clientX;
+				this.touchStartY = touch.clientY;
+				this.touchStartOffset = item.swipeOffset;
+				item.isTouching = true;
+			},
+			handleFoodTouchMove(e, item) {
+				if(!this.isEditModule) {
+					return;
+				}
+				var touch = e.touches && e.touches[0];
+				if(!touch) {
+					return;
+				}
+				var moveX = touch.clientX - this.touchStartX;
+				var moveY = touch.clientY - this.touchStartY;
+
+				if(Math.abs(moveX) < Math.abs(moveY)) {
+					return;
+				}
+
+				var moveXRpx = this.pxToRpx(moveX);
+				var nextOffset = this.limitFoodSwipeOffset(this.touchStartOffset + moveXRpx);
+				item.swipeOffset = nextOffset;
+			},
+			handleFoodTouchEnd(e, item) {
+				if(!this.isEditModule) {
+					item.isTouching = false;
+					return;
+				}
+				var touch = e.changedTouches && e.changedTouches[0];
+				if(!touch) {
+					item.isTouching = false;
+					return;
+				}
+				var moveX = touch.clientX - this.touchStartX;
+				var moveY = touch.clientY - this.touchStartY;
+
+				item.isTouching = false;
+
+				if(Math.abs(moveX) < Math.abs(moveY)) {
+					this.setFoodSwipeOpen(item, item.swipeOffset >= this.foodDeleteOffset / 2);
+					return;
+				}
+
+				if(moveX > 30 || item.swipeOffset >= this.foodDeleteOffset / 2) {
+					this.setFoodSwipeOpen(item, true);
+					return;
+				}
+
+				if(moveX < -30 || item.swipeOffset < this.foodDeleteOffset / 2) {
+					this.setFoodSwipeOpen(item, false);
+				}
+			},
+			handleFoodTouchCancel(item) {
+				item.isTouching = false;
+				this.setFoodSwipeOpen(item, item.swipeOffset >= this.foodDeleteOffset / 2);
+			},
+			pxToRpx(px) {
+				return px * 750 / this.windowWidth;
+			},
+			limitFoodSwipeOffset(offset) {
+				if(offset < 0) {
+					return 0;
+				}
+				if(offset > this.foodDeleteOffset) {
+					return this.foodDeleteOffset;
+				}
+				return offset;
+			},
+			setFoodSwipeOpen(item, isOpen) {
+				item.isTouching = false;
+				item.swipeOffset = isOpen ? this.foodDeleteOffset : 0;
+			},
+			closeOtherFoodSwipe(foodId) {
+				for(var i = 0; i < this.foodList.length; i++) {
+					if(this.foodList[i].id !== foodId) {
+						this.foodList[i].isTouching = false;
+						this.foodList[i].swipeOffset = 0;
+					}
+				}
+			},
+			resetFoodSwipeState() {
+				for(var i = 0; i < this.foodList.length; i++) {
+					this.foodList[i].isTouching = false;
+					this.foodList[i].swipeOffset = 0;
+				}
+			},
+			handleFoodDeleteTap(item) {
+				uni.showToast({
+					title: '下一步接入删除确认',
+					icon: 'none'
+				});
 			},
 			initCheckedFoodsByStatus() {
 				var checkedIds = [];
