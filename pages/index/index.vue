@@ -4,6 +4,11 @@
 		<view class="text-area">
 			<text class="title">{{title}}</text>
 		</view>
+		
+		<view class="">
+			第一次用HX的Git进行版本管理
+		</view>
+		
 	</view>
 </template>
 
