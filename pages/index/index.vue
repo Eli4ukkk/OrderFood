@@ -9,6 +9,10 @@
 			第一次用HX的Git进行版本管理
 		</view>
 		
+		<view class="">
+			第二次用HX的Git进行版本管理
+		</view>
+		
 	</view>
 </template>
 
