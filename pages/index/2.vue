@@ -105,7 +105,13 @@
 				preImage: '/static/2/Rectangle 405.png',		 // 下拉看菜单预览图路径
 				bigImage: '/static/2/Rectangle 437.png', 		// 下拉看菜单图片路径
 				
-				categoryList: ['全部', '荤菜', '素菜', '半荤'], // 分类列表（方便后续添加）
+				categoryList: [
+					{
+						id: 'all',
+						name: '全部',
+					}
+				], // “全部”只存在前端，不存入本地缓存
+				categoryId: 'all',							// 分类 id
 				categoryType: '全部',							// 分类类型
 				categoryIndex: 0, 								// 分类索引
 				
@@ -134,13 +140,54 @@
 		created() {
 			this.updateTotalPrice();
 		},
+		onShow() {
+			this.loadCategoryList();
+		},
 		methods: {
 			/**
 			 * @组件通信方法
 			 */
-			handlecategoryChange({index, type}) {
+			handlecategoryChange({index, id, type}) {
 				this.categoryIndex = index;
-				this.categoryType = type;
+				if(id || id === 0) {
+					this.categoryId = id;
+				}
+				else {
+					this.categoryId = '';
+				}
+				if(type && type.name) {
+					this.categoryType = type.name;
+				}
+				else {
+					this.categoryType = type;
+				}
+				// TODO: 后续点击分类后请求 GET /foods?categoryId=xxx；id 为 all 时请求 GET /foods
+			},
+			loadCategoryList() {
+				// TODO: 后续接后端时，这里替换为 GET /categories
+				var localCategoryList = uni.getStorageSync('categoryList') || [];
+				var nextCategoryList = [
+					{
+						id: 'all',
+						name: '全部',
+					}
+				];
+
+				for(var i = 0; i < localCategoryList.length; i++) {
+					if(localCategoryList[i] && localCategoryList[i].id !== 'all') {
+						nextCategoryList.push({
+							id: localCategoryList[i].id,
+							name: localCategoryList[i].name,
+						});
+					}
+				}
+
+				this.categoryList = nextCategoryList;
+				if(this.categoryIndex >= this.categoryList.length) {
+					this.categoryIndex = 0;
+					this.categoryId = 'all';
+					this.categoryType = '全部';
+				}
 			},
 			handleToggleCart(status) {
 				this.openCart = status;
