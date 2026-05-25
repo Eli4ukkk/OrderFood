@@ -14,7 +14,7 @@
 		</view>
 
 		<view
-			class="round bg-orange light flex flex-direction align-center justify-center"
+			class="flex flex-direction align-center justify-center"
 			style="position: absolute; left: 50%; top: 160rpx; z-index: 5; width: 265rpx; height: 265rpx; margin-left: -135rpx;"
 		>
 			<view class="text-orange text-bold" style="font-size: 86rpx; line-height: 96rpx;">
