@@ -1,13 +1,24 @@
 <template>
 
 	<scroll-view scroll-y class="category-bar bg-white">
-		<view 
-			v-for="(item, index) in categoryList" :key="index"
-			@click="isActiveChange(index, item)" :class="{ 'isActive': categoryIndex === index }"
+		<block
+		v-for="(item, index) in categoryList"
+		:key="index">
+			<view
+			v-if="categoryIndex === index"
+			@tap="isActiveChange(index, item)"
+			class="category-item isActive solid-bottom solid-top text-center text-bold text-black"
+			style="border-left-color: #5D9A7D;">
+				{{item.name || item}}
+			</view>
+			<view
+			v-else
+			@tap="isActiveChange(index, item)"
 			class="category-item solid-bottom solid-top text-center text-bold text-black"
-			:style="{borderLeftColor: categoryIndex == index ? '#5D9A7D' : 'transparent'}">
-			{{item}}
-		</view>
+			style="border-left-color: transparent;">
+				{{item.name || item}}
+			</view>
+		</block>
 	</scroll-view>
 
 </template>
@@ -31,8 +42,18 @@ export default {
 		}
 	},
 	methods: {
-		isActiveChange(index, type) {
-			this.$emit('categoryChange', { index, type });
+		isActiveChange(index, item) {
+			var categoryId = '';
+			var categoryType = item;
+			if(item && item.name) {
+				categoryId = item.id;
+				categoryType = item.name;
+			}
+			this.$emit('categoryChange', {
+				index: index,
+				id: categoryId,
+				type: categoryType
+			});
 		},
 	},
 }
