@@ -298,6 +298,192 @@
 			</view>
 		</view>
 
+		<!-- 分类选择 / 管理弹窗 -->
+		<view
+		v-if="showCategoryDialog"
+		style="
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1000;
+		background-color: #FFFFFF;
+		box-sizing: border-box;
+		padding: 0rpx 38rpx 36rpx 38rpx;"
+		class="flex flex-direction">
+			<TopNav
+			:hasBack="false"
+			title="分类管理"></TopNav>
+
+			<view
+			style="height: 76rpx; flex-shrink: 0;"
+			class="flex align-center justify-between">
+				<view
+				@tap="closeCategoryDialog"
+				class="flex align-center">
+					<text
+					style="font-size: 42rpx; line-height: 42rpx; color: #111111;"
+					class="cuIcon-back"></text>
+					<text
+					style="font-size: 30rpx; line-height: 42rpx; color: #111111; margin-left: 24rpx;">
+						菜品分类
+					</text>
+				</view>
+				<text
+				@tap="handleDeleteCategoryTap"
+				style="font-size: 30rpx; line-height: 42rpx; color: #F55B08;">
+					删除分类
+				</text>
+			</view>
+
+			<view
+			style="flex: 1; min-height: 0;"
+			class="flex flex-direction">
+				<view
+				@tap="toggleCategorySelectAll"
+				style="height: 80rpx; flex-shrink: 0;"
+				class="flex align-center">
+					<view
+					v-if="isAllCategorySelected"
+					style="width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #F55B08; background-color: #F55B08;"
+					class="flex align-center justify-center">
+						<text
+						style="font-size: 28rpx;"
+						class="cuIcon-check text-white"></text>
+					</view>
+					<view
+					v-else
+					style="width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #D9D9D9; background-color: #D9D9D9;"
+					class="flex align-center justify-center">
+					</view>
+					<text
+					style="font-size: 30rpx; line-height: 42rpx; color: #666666; margin-left: 12rpx;">
+						全选
+					</text>
+				</view>
+
+				<scroll-view
+				scroll-y
+				style="height: 560rpx; flex-shrink: 0;">
+					<view
+					v-for="item in categoryList"
+					:key="item.id"
+					style="height: 86rpx;"
+					class="flex align-center">
+						<view
+						v-if="item.checked"
+						@tap.stop="toggleCategoryChecked(item)"
+						style="width: 44rpx; height: 44rpx; border-radius: 10rpx; border: 2rpx solid #F55B08; background-color: #F55B08; flex-shrink: 0;"
+						class="flex align-center justify-center">
+							<text
+							style="font-size: 28rpx;"
+							class="cuIcon-check text-white"></text>
+						</view>
+						<view
+						v-else
+						@tap.stop="toggleCategoryChecked(item)"
+						style="width: 44rpx; height: 44rpx; border-radius: 10rpx; border: 2rpx solid #D9D9D9; background-color: #D9D9D9; flex-shrink: 0;"
+						class="flex align-center justify-center">
+						</view>
+						<text
+						@tap="selectCategory(item)"
+						style="font-size: 34rpx; line-height: 48rpx; color: #111111; margin-left: 12rpx; font-weight: bold;">
+							{{item.name}}
+						</text>
+					</view>
+				</scroll-view>
+			</view>
+
+			<view
+			style="flex-shrink: 0;"
+			class="flex flex-direction align-center">
+				<view
+				@tap="openAddCategoryDialog"
+				style="
+				width: 420rpx;
+				height: 88rpx;
+				border: 2rpx solid #F55B08;
+				border-radius: 48rpx;
+				font-size: 32rpx;
+				line-height: 88rpx;
+				color: #F55B08;"
+				class="text-center text-bold">
+					新增分类
+				</view>
+				<view
+				@tap="saveCategorySelect"
+				style="
+				width: 420rpx;
+				height: 88rpx;
+				margin-top: 20rpx;
+				background-color: #FFC588;
+				border-radius: 48rpx;
+				font-size: 32rpx;
+				line-height: 88rpx;
+				color: #F55B08;"
+				class="text-center text-bold">
+					保存修改
+				</view>
+			</view>
+		</view>
+
+		<!-- 新增分类小弹窗 -->
+		<view
+		v-if="showAddCategoryDialog"
+		@tap="closeAddCategoryDialog"
+		style="
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 1001;
+		background-color: rgba(0, 0, 0, 0.18);"
+		class="flex align-center justify-center">
+			<view
+			@tap.stop
+			style="
+			width: 660rpx;
+			min-height: 320rpx;
+			background-color: #FFFFFF;
+			border-radius: 18rpx;
+			box-sizing: border-box;
+			padding: 28rpx 30rpx 24rpx 30rpx;"
+			class="flex flex-direction">
+				<input
+				v-model="newCategoryName"
+				placeholder="请输入新菜品分类..."
+				placeholder-style="color: #111111; font-weight: bold;"
+				style="
+				width: 100%;
+				height: 72rpx;
+				line-height: 72rpx;
+				font-size: 30rpx;
+				color: #111111;
+				font-weight: bold;" />
+
+				<view
+				style="flex: 1;">
+				</view>
+
+				<view
+				@tap="confirmAddCategory"
+				style="
+				width: 230rpx;
+				height: 66rpx;
+				background-color: #D9D9D9;
+				border-radius: 12rpx;
+				font-size: 30rpx;
+				line-height: 66rpx;
+				color: #111111;
+				align-self: center;"
+				class="text-center text-bold">
+					完成
+				</view>
+			</view>
+		</view>
+
 		<!-- 删除确认弹窗 -->
 		<view
 		v-if="isDeleteDialogVisible"
@@ -475,6 +661,8 @@
 				isDeleteDialogVisible: false,
 				showFoodDialog: false,
 				showCategoryDialog: false,
+				showAddCategoryDialog: false,
+				newCategoryName: '',
 				pendingFoodStatus: true,
 				pendingFoodIds: [],
 				deleteTargetFood: null,
@@ -561,6 +749,20 @@
 					return this.activeCheckStyle;
 				}
 				return this.inactiveCheckStyle;
+			},
+			isAllCategorySelected() {
+				if(this.categoryList.length === 0) {
+					return false;
+				}
+				if(this.deleteCategoryIds.length !== this.categoryList.length) {
+					return false;
+				}
+				for(var i = 0; i < this.categoryList.length; i++) {
+					if(this.deleteCategoryIds.indexOf(this.categoryList[i].id) === -1) {
+						return false;
+					}
+				}
+				return true;
 			}
 		},
 		methods: {
@@ -601,6 +803,8 @@
 				};
 				this.selectedCategoryId = '';
 				this.selectedCategoryName = '';
+				this.deleteCategoryIds = [];
+				this.syncCategoryCheckedState();
 			},
 			chooseFoodImage() {
 				var self = this;
@@ -616,7 +820,161 @@
 				});
 			},
 			openCategoryDialog() {
+				this.selectedCategoryId = this.foodForm.categoryId;
+				if(this.foodForm.categoryName === '未分类') {
+					this.selectedCategoryName = '';
+				}
+				else {
+					this.selectedCategoryName = this.foodForm.categoryName;
+				}
 				this.showCategoryDialog = true;
+			},
+			closeCategoryDialog() {
+				this.showCategoryDialog = false;
+			},
+			selectCategory(item) {
+				console.log('选择分类', item);
+				if(item.checked === false) {
+					item.checked = true;
+				}
+				this.selectedCategoryId = item.id;
+				this.selectedCategoryName = item.name;
+			},
+			isCategoryChecked(categoryId) {
+				return this.deleteCategoryIds.indexOf(categoryId) !== -1;
+			},
+			syncCategoryCheckedState() {
+				for(var i = 0; i < this.categoryList.length; i++) {
+					this.categoryList[i].checked = this.isCategoryChecked(this.categoryList[i].id);
+				}
+			},
+			toggleCategoryChecked(item) {
+				var checkedIndex = this.deleteCategoryIds.indexOf(item.id);
+				if(checkedIndex === -1) {
+					this.deleteCategoryIds.push(item.id);
+				}
+				else {
+					this.deleteCategoryIds.splice(checkedIndex, 1);
+				}
+				this.selectCategory(item);
+				this.syncCategoryCheckedState();
+			},
+			toggleCategorySelectAll() {
+				if(this.isAllCategorySelected) {
+					this.deleteCategoryIds = [];
+					this.syncCategoryCheckedState();
+					return;
+				}
+
+				var categoryIds = [];
+				for(var i = 0; i < this.categoryList.length; i++) {
+					categoryIds.push(this.categoryList[i].id);
+				}
+				this.deleteCategoryIds = categoryIds;
+				this.syncCategoryCheckedState();
+
+				if(this.deleteCategoryIds.length === 1) {
+					this.selectCategory(this.categoryList[0]);
+				}
+			},
+			saveCategorySelect() {
+				if(this.deleteCategoryIds.length > 1) {
+					uni.showToast({
+						title: '菜品只能选择一个分类',
+						icon: 'none'
+					});
+					return;
+				}
+
+				this.foodForm.categoryId = this.selectedCategoryId;
+				this.foodForm.categoryName = this.selectedCategoryName || '未分类';
+				this.showCategoryDialog = false;
+			},
+			handleDeleteCategoryTap() {
+				if(this.deleteCategoryIds.length === 0) {
+					uni.showToast({
+						title: '请先选择分类',
+						icon: 'none'
+					});
+					return;
+				}
+
+				var deleteIds = this.deleteCategoryIds.slice();
+				var nextCategoryList = [];
+				for(var i = 0; i < this.categoryList.length; i++) {
+					if(deleteIds.indexOf(this.categoryList[i].id) === -1) {
+						nextCategoryList.push(this.categoryList[i]);
+					}
+				}
+
+				// TODO: 后续替换为 DELETE /categories 或批量删除接口
+				this.categoryList = nextCategoryList;
+
+				if(deleteIds.indexOf(this.foodForm.categoryId) !== -1) {
+					this.foodForm.categoryId = '';
+					this.foodForm.categoryName = '未分类';
+				}
+				if(deleteIds.indexOf(this.selectedCategoryId) !== -1) {
+					this.selectedCategoryId = '';
+					this.selectedCategoryName = '';
+				}
+
+				this.deleteCategoryIds = [];
+				this.syncCategoryCheckedState();
+				this.syncCategoryStorage();
+			},
+			openAddCategoryDialog() {
+				this.newCategoryName = '';
+				this.showAddCategoryDialog = true;
+			},
+			closeAddCategoryDialog() {
+				this.showAddCategoryDialog = false;
+				this.newCategoryName = '';
+			},
+			confirmAddCategory() {
+				var categoryName = this.newCategoryName ? this.newCategoryName.trim() : '';
+				if(!categoryName) {
+					uni.showToast({
+						title: '请输入分类名称',
+						icon: 'none'
+					});
+					return;
+				}
+
+				for(var i = 0; i < this.categoryList.length; i++) {
+					if(this.categoryList[i].name === categoryName) {
+						uni.showToast({
+							title: '分类名称已存在',
+							icon: 'none'
+						});
+						return;
+					}
+				}
+
+				// TODO: 后续替换为 POST /categories，id 使用后端返回值
+				var newCategory = {
+					id: Date.now(),
+					name: categoryName,
+					checked: false,
+				};
+
+				this.categoryList.push(newCategory);
+				this.deleteCategoryIds = [];
+				this.syncCategoryCheckedState();
+				this.selectCategory(newCategory);
+				this.syncCategoryStorage();
+				this.closeAddCategoryDialog();
+			},
+			syncCategoryStorage() {
+				var categoryListWithoutChecked = [];
+				for(var i = 0; i < this.categoryList.length; i++) {
+					categoryListWithoutChecked.push({
+						id: this.categoryList[i].id,
+						name: this.categoryList[i].name,
+					});
+				}
+				// TODO: 后续分类数据改为后端维护，这里替换为接口刷新或删除本地缓存逻辑
+				uni.setStorageSync('categoryList', categoryListWithoutChecked);
 			},
 			confirmFoodForm() {
 				var foodName = this.foodForm.name ? this.foodForm.name.trim() : '';
