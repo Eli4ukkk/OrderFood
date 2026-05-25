@@ -181,7 +181,7 @@
 						id: 1,
 						name: '优客来',
 						image: '/static/logo.png',
-						status: true,
+						status: false,
 						swipeOffset: 0,
 						isTouching: false,
 						isSelectOpen: false,
@@ -190,7 +190,7 @@
 						id: 2,
 						name: '美尔途',
 						image: '/static/logo.png',
-						status: true,
+						status: false,
 						swipeOffset: 0,
 						isTouching: false,
 						isSelectOpen: false,
@@ -211,6 +211,7 @@
 		onLoad() {
 			const systemInfo = uni.getSystemInfoSync()
 			this.windowWidth = systemInfo.windowWidth || 375
+			this.loadShopStorage()
 		},
 		computed: {
 			hasSelectOpenShop() {
@@ -368,13 +369,14 @@
 					id: this.getNextShopId(),
 					name: shopName,
 					image: this.createShopImage,
-					status: true,
+					status: false,
 					swipeOffset: 0,
 					isTouching: false,
 					isSelectOpen: false,
 				}
 				this.requestCreateShop(newShop)
 				this.shopList.push(newShop)
+				this.syncShopStorage()
 				this.createShopName = ''
 				this.createShopImage = ''
 				this.showCreateModal = false
@@ -419,6 +421,7 @@
 				this.shopList = nextShopList
 				this.selectedShopIds = []
 				this.showDeleteModal = false
+				this.syncShopStorage()
 			},
 			requestDeleteShop(ids) {
 				// TODO: 后续在这里请求后端删除店铺
@@ -426,9 +429,44 @@
 			handleToggleShopStatus(item) {
 				item.status = !item.status
 				this.handleShopStatusChange(item)
+				this.syncShopStorage()
 			},
 			handleShopStatusChange(item) {
 				// TODO: 后续在这里请求后端修改店铺营业状态
+			},
+			loadShopStorage() {
+				// TODO: 后续店铺数据改为后端维护，这里替换为 GET /shops
+				const localShopList = uni.getStorageSync('shopList') || []
+				if (!Array.isArray(localShopList) || localShopList.length === 0) {
+					this.syncShopStorage()
+					return
+				}
+				const nextShopList = []
+				for (let i = 0; i < localShopList.length; i++) {
+					nextShopList.push({
+						id: localShopList[i].id,
+						name: localShopList[i].name,
+						image: localShopList[i].image,
+						status: !!localShopList[i].status,
+						swipeOffset: 0,
+						isTouching: false,
+						isSelectOpen: false,
+					})
+				}
+				this.shopList = nextShopList
+			},
+			syncShopStorage() {
+				// TODO: 后续店铺数据改为后端维护，这里删除本地缓存同步逻辑
+				const shopListWithoutPageState = []
+				for (let i = 0; i < this.shopList.length; i++) {
+					shopListWithoutPageState.push({
+						id: this.shopList[i].id,
+						name: this.shopList[i].name,
+						image: this.shopList[i].image,
+						status: this.shopList[i].status,
+					})
+				}
+				uni.setStorageSync('shopList', shopListWithoutPageState)
 			},
 			goBack() {
 				const pages = getCurrentPages()

@@ -70,6 +70,7 @@
 			<Card
 			:info="stoneStatus"
 			:hasDot="true"
+			:dotClass="stoneStatusDotClass"
 			:clickImageFunction="false"
 			:clickCardFunction="true"
 			@clickCard="goStoneStatusPage"
@@ -209,10 +210,11 @@
 					{
 						pic: '/static/manager/Group 326 (1).png',
 						top: '店铺状态管理',
-						bottom: '营业中',
+						bottom: '未营业',
 						auth: ''
 					}
 				],
+				stoneStatusDotClass: 'bg-red',
 				todayOrderManage: [
 					{
 						pic: '/static/manager/Group 326 (2).png',
@@ -235,6 +237,9 @@
 			isManager() {
 				return this.userInfo[0].auth === '管理员'
 			}
+		},
+		onShow() {
+			this.refreshStoneStatusCard()
 		},
 		methods: {
 			/**
@@ -321,6 +326,26 @@
 				uni.navigateTo({
 					url: '/pages/index/manager/foodstatus'
 				})
+			},
+			refreshStoneStatusCard() {
+				// TODO: 后续替换为 GET /shops，根据后端返回的店铺营业状态刷新卡片
+				const localShopList = uni.getStorageSync('shopList') || []
+				let hasOpenShop = false
+				if (Array.isArray(localShopList)) {
+					for (let i = 0; i < localShopList.length; i++) {
+						if (localShopList[i].status) {
+							hasOpenShop = true
+							break
+						}
+					}
+				}
+				if (hasOpenShop) {
+					this.stoneStatus[0].bottom = '营业中'
+					this.stoneStatusDotClass = 'bg-green'
+					return
+				}
+				this.stoneStatus[0].bottom = '未营业'
+				this.stoneStatusDotClass = 'bg-red'
 			}
 		}
 	}

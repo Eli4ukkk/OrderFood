@@ -66,7 +66,7 @@
 					width: 10rpx;
 					height: 10rpx;
 					border-radius: 50%;"
-					class="bg-green margin-right-sm"></view>
+					:class="dotClass + ' margin-right-sm'"></view>
 					{{ info[0].bottom }}
 				</view>
 			</view>
@@ -108,6 +108,10 @@ export default {
 		hasDot: {
 			type: Boolean,
 			default: false
+		},
+		dotClass: {
+			type: String,
+			default: 'bg-green'
 		}
 	},
 	data() {
