@@ -80,7 +80,12 @@
 			:clickCardFunction="true"
 			@clickCard="goTodayOrderManagePage"
 			></Card>
-			<Card :info="FoodSatusManage"></Card>
+			<Card
+			:info="FoodSatusManage"
+			:clickImageFunction="false"
+			:clickCardFunction="true"
+			@clickCard="goFoodStatusPage"
+			></Card>
 		</view>
 		
 		<!-- 用户 -->
@@ -310,6 +315,11 @@
 			goStoneStatusPage() {
 				uni.navigateTo({
 					url: '/pages/index/manager/stonestatus'
+				})
+			},
+			goFoodStatusPage() {
+				uni.navigateTo({
+					url: '/pages/index/manager/foodstatus'
 				})
 			}
 		}

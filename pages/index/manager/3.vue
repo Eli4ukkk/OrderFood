@@ -49,6 +49,9 @@
 		<Card
 		class=""
 		:info="FoodSatusManage"
+		:clickImageFunction="false"
+		:clickCardFunction="true"
+		@clickCard="goFoodStatusPage"
 		></Card>
 		
 	</view>
@@ -145,6 +148,11 @@
 			goStoneStatusPage() {
 				uni.navigateTo({
 					url: '/pages/index/manager/stonestatus'
+				})
+			},
+			goFoodStatusPage() {
+				uni.navigateTo({
+					url: '/pages/index/manager/foodstatus'
 				})
 			}
 		}

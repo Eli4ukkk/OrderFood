@@ -68,7 +68,7 @@
 					<view class="padding-xl bg-white">
 						确定要清空购物车吗？
 					</view>
-					<view class="cu-bar bg-white justify-end">
+					<view class="cu-bar bg-white flex justify-center">
 						<view class="action">
 							<button class="cu-btn line-green text-green" @tap="cancelClear">取消</button>
 							<button class="cu-btn bg-green margin-left" @tap="confirmClear">确认</button>

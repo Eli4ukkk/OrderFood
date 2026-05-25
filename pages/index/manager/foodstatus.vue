@@ -767,8 +767,15 @@
 		},
 		methods: {
 			goBack() {
-				uni.navigateBack({
-					delta: 1
+				const pages = getCurrentPages();
+				if(pages.length > 1) {
+					uni.navigateBack({
+						delta: 1
+					});
+					return;
+				}
+				uni.navigateTo({
+					url: '/pages/index/manager/3'
 				});
 			},
 			editfood() {
