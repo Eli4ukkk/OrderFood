@@ -361,6 +361,22 @@
 				foodDeleteOffset: 150,
 				activeCheckStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #F55B08; background-color: #F55B08;',
 				inactiveCheckStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
+				// TODO: 后续替换为 GET /categories，分类 id 使用后端返回值
+				categoryList: [
+					{
+						id: 1,
+						name: '荤菜',
+						checked: false,
+					},
+					{
+						id: 2,
+						name: '素菜',
+						checked: false,
+					},
+				],
+				selectedCategoryId: '',
+				selectedCategoryName: '',
+				deleteCategoryIds: [],
 				foodList: [
 					{
 						id: 1,
