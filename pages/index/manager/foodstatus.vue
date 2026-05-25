@@ -85,6 +85,7 @@
 		bottom: 70rpx;"
 		class="radius flex justify-center">
 			<button
+			@tap="openFoodDialog"
 			style="
 			width: 80%;
 			background-color: #FFC588;
@@ -172,6 +173,127 @@
 							class="cuIcon-check text-white"></text>
 						</view>
 					</view>
+				</view>
+			</view>
+		</view>
+
+		<!-- 新增菜品弹窗 -->
+		<view
+		v-if="showFoodDialog"
+		@tap="closeFoodDialog"
+		style="
+		position: fixed;
+		top: 0;
+		left: 0;
+		right: 0;
+		bottom: 0;
+		z-index: 998;
+		background-color: rgba(0, 0, 0, 0.08);"
+		class="margin-top flex align-center justify-center">
+			<view
+			@tap.stop
+			style="
+			width: 700rpx;
+			min-height: 880rpx;
+			background-color: #FFFFFF;
+			position: relative;
+			box-sizing: border-box;
+			padding: 120rpx 36rpx 60rpx 36rpx;"
+			class="radius flex flex-direction align-center">
+				<text
+				@tap="closeFoodDialog"
+				style="
+				position: absolute;
+				right: 36rpx;
+				top: 34rpx;
+				font-size: 48rpx;
+				line-height: 48rpx;
+				color: #111111;"
+				class="cuIcon-close"></text>
+
+				<view
+				@tap="chooseFoodImage"
+				style="
+				width: 280rpx;
+				height: 280rpx;
+				background-color: #D9D9D9;
+				border-radius: 18rpx;
+				overflow: hidden;"
+				class="flex flex-direction align-center justify-center">
+					<image
+					v-if="foodForm.image"
+					:src="foodForm.image"
+					style="width: 280rpx; height: 280rpx;"
+					mode="aspectFill"></image>
+					<view
+					v-else
+					class="flex flex-direction align-center justify-center">
+						<text
+						style="font-size: 58rpx; line-height: 64rpx; color: #111111;"
+						class="cuIcon-add"></text>
+						<text
+						style="font-size: 28rpx; line-height: 40rpx; color: #555555; margin-top: 24rpx;">
+							点击上传菜品主图
+						</text>
+					</view>
+				</view>
+
+				<view
+				style="
+				width: 100%;
+				margin-top: 34rpx;
+				background-color: #D9D9D9;
+				border-radius: 12rpx;
+				overflow: hidden;">
+					<view
+					style="height: 82rpx; padding: 0 20rpx; border-bottom: 2rpx dashed #AAAAAA; box-sizing: border-box;"
+					class="flex align-center justify-between">
+						<text style="font-size: 30rpx; color: #111111;">菜品名称</text>
+						<input
+						v-model="foodForm.name"
+						placeholder="请输入"
+						placeholder-style="color: #666666;"
+						style="width: 360rpx; height: 82rpx; line-height: 82rpx; text-align: right; font-size: 28rpx; color: #333333;" />
+					</view>
+					<view
+					@tap="openCategoryDialog"
+					style="height: 82rpx; padding: 0 20rpx; border-bottom: 2rpx dashed #AAAAAA; box-sizing: border-box;"
+					class="flex align-center justify-between">
+						<text style="font-size: 30rpx; color: #111111;">菜品分类</text>
+						<view class="flex align-center">
+							<text style="font-size: 28rpx; color: #555555;">
+								{{foodForm.categoryName}}
+							</text>
+							<text
+							style="font-size: 42rpx; color: #333333; margin-left: 14rpx;"
+							class="cuIcon-right"></text>
+						</view>
+					</view>
+					<view
+					style="height: 82rpx; padding: 0 20rpx; box-sizing: border-box;"
+					class="flex align-center justify-between">
+						<text style="font-size: 30rpx; color: #111111;">菜品价格</text>
+						<input
+						v-model="foodForm.price"
+						type="digit"
+						placeholder="0"
+						placeholder-style="color: #555555;"
+						style="width: 300rpx; height: 82rpx; line-height: 82rpx; text-align: right; font-size: 28rpx; color: #333333;" />
+					</view>
+				</view>
+
+				<view
+				@tap="confirmFoodForm"
+				style="
+				width: 390rpx;
+				height: 86rpx;
+				margin-top: 40rpx;
+				background-color: #FFC588;
+				border-radius: 48rpx;
+				font-size: 34rpx;
+				color: #F55B08;"
+				class="flex align-center justify-center text-bold">
+					确定
 				</view>
 			</view>
 		</view>
@@ -351,6 +473,8 @@
 				checkedFoodIds: [],
 				isStatusDialogVisible: false,
 				isDeleteDialogVisible: false,
+				showFoodDialog: false,
+				showCategoryDialog: false,
 				pendingFoodStatus: true,
 				pendingFoodIds: [],
 				deleteTargetFood: null,
@@ -377,6 +501,13 @@
 				selectedCategoryId: '',
 				selectedCategoryName: '',
 				deleteCategoryIds: [],
+				foodForm: {
+					image: '',
+					name: '',
+					categoryId: '',
+					categoryName: '未分类',
+					price: '',
+				},
 				foodList: [
 					{
 						id: 1,
@@ -451,6 +582,99 @@
 					this.clearCheckedFoods();
 					this.resetFoodSwipeState();
 				}
+			},
+			openFoodDialog() {
+				this.resetFoodForm();
+				this.showFoodDialog = true;
+			},
+			closeFoodDialog() {
+				this.showFoodDialog = false;
+				this.resetFoodForm();
+			},
+			resetFoodForm() {
+				this.foodForm = {
+					image: '',
+					name: '',
+					categoryId: '',
+					categoryName: '未分类',
+					price: '',
+				};
+				this.selectedCategoryId = '';
+				this.selectedCategoryName = '';
+			},
+			chooseFoodImage() {
+				var self = this;
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed'],
+					sourceType: ['album', 'camera'],
+					success: function(res) {
+						if(res.tempFilePaths && res.tempFilePaths.length > 0) {
+							self.foodForm.image = res.tempFilePaths[0];
+						}
+					}
+				});
+			},
+			openCategoryDialog() {
+				this.showCategoryDialog = true;
+			},
+			confirmFoodForm() {
+				var foodName = this.foodForm.name ? this.foodForm.name.trim() : '';
+				var foodPrice = this.foodForm.price ? String(this.foodForm.price).trim() : '';
+
+				if(!foodName) {
+					uni.showToast({
+						title: '请输入菜品名称',
+						icon: 'none'
+					});
+					return;
+				}
+				if(!foodPrice) {
+					uni.showToast({
+						title: '请输入菜品价格',
+						icon: 'none'
+					});
+					return;
+				}
+				if(isNaN(Number(foodPrice)) || Number(foodPrice) < 0) {
+					uni.showToast({
+						title: '请输入正确价格',
+						icon: 'none'
+					});
+					return;
+				}
+
+				var newFood = {
+					id: this.createLocalFoodId(),
+					image: this.foodForm.image || '/static/logo.png',
+					name: foodName,
+					price: Number(foodPrice).toFixed(2),
+					categoryId: this.foodForm.categoryId,
+					categoryName: this.foodForm.categoryName || '未分类',
+					status: false,
+					checked: false,
+					checkStyle: this.inactiveCheckStyle,
+					swipeOffset: 0,
+					isTouching: false,
+				};
+
+				// TODO: 后续替换为 POST /foods，提交 name、price、image、categoryId
+				// 如果后端使用关联表，由后端根据 categoryId 写入 food_category
+				this.requestCreateFood(newFood);
+				this.foodList.push(newFood);
+				this.closeFoodDialog();
+			},
+			createLocalFoodId() {
+				var maxId = 0;
+				for(var i = 0; i < this.foodList.length; i++) {
+					if(Number(this.foodList[i].id) > maxId) {
+						maxId = Number(this.foodList[i].id);
+					}
+				}
+				return maxId + 1;
+			},
+			requestCreateFood(food) {
+				// TODO: 后续在这里请求后端新增菜品
 			},
 			handleFoodTouchStart(e, item) {
 				if(!this.isEditModule) {
@@ -627,7 +851,7 @@
 					this.syncFoodCheckedState();
 					return;
 				}
-				
+
 				var checkedIds = [];
 				for(var i = 0; i < this.foodList.length; i++) {
 					checkedIds.push(this.foodList[i].id);
