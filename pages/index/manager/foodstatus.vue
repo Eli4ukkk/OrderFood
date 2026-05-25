@@ -99,7 +99,7 @@
 		<!-- 菜 -->
 		<view
 		class="bg-white solid margin-sm padding-sm radius">
-			<view 
+			<view
 			v-for="(item, index) in foodList"
 			:key="item.id"
 			style="position: relative; overflow: hidden;"
@@ -130,15 +130,15 @@
 				@touchmove="handleFoodTouchMove($event, item)"
 				@touchend="handleFoodTouchEnd($event, item)"
 				@touchcancel="handleFoodTouchCancel(item)"
-				:style="'position: relative; z-index: 2; background-color: #FFFFFF; box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1); transform: translateX(' + (isEditModule ? item.swipeOffset : 0) + 'rpx); transition: ' + (item.isTouching ? 'none' : 'transform 220ms ease') + ';'"
-				class="flex solid padding-sm radius">
+				:style="getFoodCardStyle(item)"
+				class="flex align-center solid padding-sm radius">
 					<image 
 					style="flex-shrink: 0; width: 150rpx; height: 150rpx;"
 					:src="item.image" mode="aspectFill"></image>
 					<view 
-					style="flex: 1;"
+					style="flex: 1; width: 0; height: 150rpx;"
 					class="flex flex-direction justify-between padding-sm">
-						<view class="text-bold text-black text-lg">
+						<view class="text-bold text-black text-lg u-line-1">
 							{{item.name}}
 						</view>
 						<view v-if="item.status" 
@@ -159,12 +159,18 @@
 						</view>
 					</view>
 					<view 
-					style=""
-					class="flex align-center">
+					style="width: 210rpx; flex-shrink: 0; height: 150rpx;"
+					class="flex align-center justify-end">
+						<text
+						style="font-size: 30rpx; line-height: 42rpx; color: #F98338; flex-shrink: 0;"
+						class="text-bold">
+							¥{{item.price}}
+						</text>
 						<view
 						v-if="isEditModule"
 						@tap.stop="toggleFoodChecked(item.id)"
 						:style="item.checkStyle"
+						style="margin-left: 18rpx; flex-shrink: 0;"
 						class="flex align-center justify-center">
 							<text
 							v-if="isFoodChecked(item.id)"
@@ -366,6 +372,7 @@
 						id: 1,
 						image: '/static/logo.png',
 						name: '水煮肉片',
+						price: '18.00',
 						status: true, 					// 已上架，已下架
 						checked: false,
 						checkStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
@@ -376,6 +383,7 @@
 						id: 2,
 						image: '/static/logo.png',
 						name: '青椒肉丝',
+						price: '22.00',
 						status: false,
 						checked: false,
 						checkStyle: 'width: 44rpx; height: 44rpx; border-radius: 50%; border: 2rpx solid #999999; background-color: #FFFFFF;',
@@ -435,6 +443,11 @@
 					this.clearCheckedFoods();
 					this.resetFoodSwipeState();
 				}
+			},
+			getFoodCardStyle(item) {
+				var swipeOffset = this.isEditModule ? item.swipeOffset : 0;
+				var transitionStyle = item.isTouching ? 'none' : 'transform 220ms ease';
+				return 'position: relative; z-index: 2; background-color: #FFFFFF; box-shadow: 0 0 2px 2px rgba(0, 0, 0, 0.1); transform: translateX(' + swipeOffset + 'rpx); transition: ' + transitionStyle + ';';
 			},
 			handleFoodTouchStart(e, item) {
 				if(!this.isEditModule) {
