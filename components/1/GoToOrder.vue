@@ -11,7 +11,7 @@
 					style="position: absolute; left: 0; top: 0; width: 100%; height: 100%;"
 				></image>
 				<view
-					class="round bg-orange light flex align-center justify-center text-lg text-bold"
+					class="flex align-center justify-center text-lg text-bold"
 					style="position: absolute; left: 50%; top: 70.5%; transform: translate(-50%, -50%); width: 230rpx; height: 227rpx; margin-left: -1rpx;"
 				>
 					<text>暂无取餐码</text>
