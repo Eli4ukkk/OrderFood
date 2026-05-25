@@ -431,7 +431,14 @@
 				// TODO: 后续在这里请求后端修改店铺营业状态
 			},
 			goBack() {
-				uni.navigateBack()
+				const pages = getCurrentPages()
+				if (pages.length > 1) {
+					uni.navigateBack()
+					return
+				}
+				uni.navigateTo({
+					url: '/pages/index/manager/3'
+				})
 			}
 		}
 	}
