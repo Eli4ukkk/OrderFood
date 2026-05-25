@@ -32,6 +32,9 @@
 		<Card
 		:info="stoneStatus"
 		:hasDot="true"
+		:clickImageFunction="false"
+		:clickCardFunction="true"
+		@clickCard="goStoneStatusPage"
 		></Card>
 		
 		<!-- 今日订单管理 -->
@@ -137,6 +140,11 @@
 			goTodayOrderManagePage() {
 				uni.navigateTo({
 					url: '/pages/index/manager/unorder'
+				})
+			},
+			goStoneStatusPage() {
+				uni.navigateTo({
+					url: '/pages/index/manager/stonestatus'
 				})
 			}
 		}
