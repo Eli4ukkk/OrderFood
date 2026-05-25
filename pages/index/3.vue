@@ -67,7 +67,13 @@
 					></FoodInfo>
 				</template>
 			</Card>
-			<Card :info="stoneStatus" :hasDot="true"></Card>
+			<Card
+			:info="stoneStatus"
+			:hasDot="true"
+			:clickImageFunction="false"
+			:clickCardFunction="true"
+			@clickCard="goStoneStatusPage"
+			></Card>
 			<Card
 			:info="todayOrderManage"
 			:clickImageFunction="false"
@@ -299,6 +305,11 @@
 			goTodayOrderManagePage() {
 				uni.navigateTo({
 					url: '/pages/index/manager/unorder'
+				})
+			},
+			goStoneStatusPage() {
+				uni.navigateTo({
+					url: '/pages/index/manager/stonestatus'
 				})
 			}
 		}
