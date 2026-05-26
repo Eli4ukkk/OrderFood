@@ -106,7 +106,7 @@
 				<!-- 保存修改 -->
 				<view 
 				style="flex-shrink: 0; width: 100%;"
-				class="padding solid-top flex">
+				class="padding solid-top flex justify-center">
 					<view
 						@tap="saveChange"
 						class="text-center radius"
