@@ -8,11 +8,20 @@
 		/>
 		
 		<view class="bg-white solid margin-sm padding-sm radius">
-			<view
-			style=" background-color: #C9F6C9; height: 50rpx; width: 160rpx;"
-			class="flex text-black align-center padding-sm justify-center radius">
-				店铺管理
+			<view class="flex justify-between">
+				<view
+				style=" background-color: #C9F6C9; height: 50rpx; width: 160rpx;"
+				class="flex text-black align-center padding-sm justify-center radius">
+					店铺管理
+				</view>
+				<view
+				@click="editStone"
+				style=" background-color: #ffaa00; height: 50rpx; width: 160rpx;"
+				class="flex text-black align-center padding-sm justify-center radius">
+					{{ isEditShopMode ? '完成编辑' : '编辑店铺' }}
+				</view>
 			</view>
+			
 			<!-- 卡片 -->
 			<view
 			v-for="item in shopList"
@@ -38,6 +47,7 @@
 				@touchmove="handleShopTouchMove($event, item)"
 				@touchend="handleShopTouchEnd($event, item)"
 				@touchcancel="handleShopTouchCancel(item)"
+				@tap="handleShopCardTap(item)"
 				class="align-center flex padding-sm bg-white"
 				:style="'position: relative; z-index: 2; transform: translateX(' + item.swipeOffset + 'rpx); transition: ' + (item.isTouching ? 'none' : 'transform 220ms ease') + ';'">
 					<image 
@@ -49,6 +59,7 @@
 					style="flex: 1;"
 					class="padding-left-sm">{{ item.name }}</view>
 					<view>
+						<!-- 后端对接点：切换店铺营业状态，见 handleShopStatusChange。 -->
 						<view
 						@tap.stop="handleToggleShopStatus(item)"
 						class="flex align-center"
@@ -65,12 +76,14 @@
 		v-if="hasSelectOpenShop"
 		class="bg-white flex align-center"
 		style="box-shadow: 0 0 5px 5px rgba(0, 0, 0, 0.1); border-radius: 30px 30px 0 0; position: fixed; left: 0; right: 0; bottom: 0; z-index: 99; height: 150rpx; padding-bottom: env(safe-area-inset-bottom);">
+			<!-- 后端对接点：右滑后新建店铺，提交接口见 requestCreateShop。 -->
 			<view
 			@tap="handleCreateShopTap"
 			class="margin-xl round flex-sub flex align-center justify-center text-lg text-black"
 			style="height: 100rpx; border: 1px solid orange;">
 				新建
 			</view>
+			<!-- 后端对接点：右滑后删除选中店铺，提交接口见 requestDeleteShop。 -->
 			<view
 			@tap="handleDeleteShopTap"
 			class="margin-xl round flex-sub flex align-center justify-center text-lg"
@@ -110,12 +123,12 @@
 
 		<view
 		class="cu-modal"
-		:class="showCreateModal ? 'show' : ''">
+		:class="showShopFormModal ? 'show' : ''">
 			<view
 			class="cu-dialog bg-white"
 			style="border-radius: 18rpx; width: 620rpx;">
 				<view class="padding-tb text-black text-xl text-bold">
-					新建店铺
+					{{ shopFormMode === 'create' ? '新建店铺' : '编辑店铺' }}
 				</view>
 				<view class="padding-lr-xl padding-bottom">
 					<view
@@ -123,34 +136,50 @@
 					class="flex align-center justify-center bg-gray radius"
 					style="height: 260rpx; overflow: hidden;">
 						<image
-						v-if="createShopImage"
-						:src="createShopImage"
+						v-if="shopFormImage"
+						:src="shopFormImage"
 						mode="aspectFill"
 						style="width: 100%; height: 260rpx;"></image>
 						<view
 						v-else
 						class="flex flex-direction align-center justify-center text-gray">
 							<text class="cuIcon-cameraadd text-xxl"></text>
-							<text class="margin-top-xs">上传店铺图片</text>
+							<text class="margin-top-xs">上传店铺头像</text>
+						</view>
+					</view>
+					<view
+					@tap="handleChooseShopMenuImage"
+					class="flex align-center justify-center bg-gray radius margin-top"
+					style="height: 260rpx; overflow: hidden;">
+						<image
+						v-if="shopFormMenuImage"
+						:src="shopFormMenuImage"
+						mode="aspectFill"
+						style="width: 100%; height: 260rpx;"></image>
+						<view
+						v-else
+						class="flex flex-direction align-center justify-center text-gray">
+							<text class="cuIcon-cameraadd text-xxl"></text>
+							<text class="margin-top-xs">上传店铺菜单图片</text>
 						</view>
 					</view>
 					<view class="solid margin-top radius padding-lr">
 						<input
-						:value="createShopName"
-						@input="handleCreateShopNameInput"
+						:value="shopFormName"
+						@input="handleShopFormNameInput"
 						placeholder="请输入店铺名称"
 						style="height: 90rpx; line-height: 90rpx;" />
 					</view>
 				</view>
 				<view class="flex flex-direction align-center padding-bottom">
 					<view
-					@tap="handleConfirmCreateShop"
+					@tap="handleConfirmShopForm"
 					style="background-color: #D9D9D9; width: 60%;"
 					class="solid flex-sub padding-tb text-gray text-lg round margin-bottom text-bold text-black">
 						确定
 					</view>
 					<view
-					@tap="handleCancelCreateShop"
+					@tap="handleCancelShopForm"
 					style="box-sizing: border-box; border: 1px solid black; width: 60%;"
 					class="flex-sub padding-tb text-gray text-lg round margin-bottom text-bold text-black">
 						取消
@@ -181,6 +210,7 @@
 						id: 1,
 						name: '优客来',
 						image: '/static/logo.png',
+						menuImage: '',
 						status: false,
 						swipeOffset: 0,
 						isTouching: false,
@@ -190,6 +220,7 @@
 						id: 2,
 						name: '美尔途',
 						image: '/static/logo.png',
+						menuImage: '',
 						status: false,
 						swipeOffset: 0,
 						isTouching: false,
@@ -200,12 +231,18 @@
 				touchStartX: 0,
 				touchStartY: 0,
 				touchStartOffset: 0,
+				ignoreNextShopTap: false,
+				ignoreShopTapTimer: null,
 				windowWidth: 375,
 				selectOffset: 56,
 				showDeleteModal: false,
-				showCreateModal: false,
-				createShopName: '',
-				createShopImage: '',
+				isEditShopMode: false,
+				showShopFormModal: false,
+				shopFormMode: 'create',
+				editingShopId: null,
+				shopFormName: '',
+				shopFormImage: '',
+				shopFormMenuImage: '',
 			}
 		},
 		onLoad() {
@@ -267,6 +304,9 @@
 				const moveY = touch.clientY - this.touchStartY
 				
 				item.isTouching = false
+				if (Math.abs(moveX) > 10 && Math.abs(moveX) > Math.abs(moveY)) {
+					this.markIgnoreNextShopTap()
+				}
 				
 				if (Math.abs(moveX) < Math.abs(moveY)) {
 					this.setShopSelectMode(item, item.swipeOffset >= this.selectOffset / 2)
@@ -285,6 +325,18 @@
 			handleShopTouchCancel(item) {
 				item.isTouching = false
 				this.setShopSelectMode(item, item.swipeOffset >= this.selectOffset / 2)
+				this.markIgnoreNextShopTap()
+			},
+			markIgnoreNextShopTap() {
+				const that = this
+				this.ignoreNextShopTap = true
+				if (this.ignoreShopTapTimer) {
+					clearTimeout(this.ignoreShopTapTimer)
+				}
+				this.ignoreShopTapTimer = setTimeout(function() {
+					that.ignoreNextShopTap = false
+					that.ignoreShopTapTimer = null
+				}, 350)
 			},
 			pxToRpx(px) {
 				return px * 750 / this.windowWidth
@@ -324,15 +376,19 @@
 				return this.selectedShopIds.indexOf(id) > -1
 			},
 			handleCreateShopTap() {
-				this.createShopName = ''
-				this.createShopImage = ''
-				this.showCreateModal = true
+				// 后端对接点：这里只负责打开新建弹窗，真正创建店铺在 handleConfirmShopForm -> requestCreateShop。
+				this.shopFormMode = 'create'
+				this.editingShopId = null
+				this.shopFormName = ''
+				this.shopFormImage = ''
+				this.shopFormMenuImage = ''
+				this.showShopFormModal = true
 			},
-			handleCancelCreateShop() {
-				this.showCreateModal = false
+			handleCancelShopForm() {
+				this.resetShopForm()
 			},
-			handleCreateShopNameInput(e) {
-				this.createShopName = e.detail.value
+			handleShopFormNameInput(e) {
+				this.shopFormName = e.detail.value
 			},
 			handleChooseShopImage() {
 				const that = this
@@ -344,13 +400,28 @@
 						if (!res.tempFilePaths || res.tempFilePaths.length === 0) {
 							return
 						}
-						that.createShopImage = res.tempFilePaths[0]
-						that.requestUploadShopImage(that.createShopImage)
+						that.shopFormImage = res.tempFilePaths[0]
+						that.requestUploadShopImage(that.shopFormImage)
 					}
 				})
 			},
-			handleConfirmCreateShop() {
-				const shopName = this.createShopName.replace(/^\s+|\s+$/g, '')
+			handleChooseShopMenuImage() {
+				const that = this
+				uni.chooseImage({
+					count: 1,
+					sizeType: ['compressed'],
+					sourceType: ['album', 'camera'],
+					success: function(res) {
+						if (!res.tempFilePaths || res.tempFilePaths.length === 0) {
+							return
+						}
+						that.shopFormMenuImage = res.tempFilePaths[0]
+						that.requestUploadShopMenuImage(that.shopFormMenuImage)
+					}
+				})
+			},
+			handleConfirmShopForm() {
+				const shopName = this.shopFormName.replace(/^\s+|\s+$/g, '')
 				if (!shopName) {
 					uni.showToast({
 						title: '请输入店铺名称',
@@ -358,28 +429,60 @@
 					})
 					return
 				}
-				if (!this.createShopImage) {
+				if (!this.shopFormImage) {
 					uni.showToast({
 						title: '请上传店铺图片',
 						icon: 'none'
 					})
 					return
 				}
-				const newShop = {
-					id: this.getNextShopId(),
-					name: shopName,
-					image: this.createShopImage,
-					status: false,
-					swipeOffset: 0,
-					isTouching: false,
-					isSelectOpen: false,
+				if (this.shopFormMode === 'create') {
+					const newShop = {
+						id: this.getNextShopId(),
+						name: shopName,
+						image: this.shopFormImage,
+						menuImage: this.shopFormMenuImage,
+						status: false,
+						swipeOffset: 0,
+						isTouching: false,
+						isSelectOpen: false,
+					}
+					this.requestCreateShop(newShop)
+					this.shopList.push(newShop)
+					this.syncShopStorage()
+					this.resetShopForm()
+					return
 				}
-				this.requestCreateShop(newShop)
-				this.shopList.push(newShop)
+				const editShop = this.findShopById(this.editingShopId)
+				if (!editShop) {
+					uni.showToast({
+						title: '店铺不存在',
+						icon: 'none'
+					})
+					return
+				}
+				editShop.name = shopName
+				editShop.image = this.shopFormImage
+				editShop.menuImage = this.shopFormMenuImage
+				this.requestUpdateShop(editShop)
 				this.syncShopStorage()
-				this.createShopName = ''
-				this.createShopImage = ''
-				this.showCreateModal = false
+				this.resetShopForm()
+			},
+			resetShopForm() {
+				this.showShopFormModal = false
+				this.shopFormMode = 'create'
+				this.editingShopId = null
+				this.shopFormName = ''
+				this.shopFormImage = ''
+				this.shopFormMenuImage = ''
+			},
+			findShopById(id) {
+				for (let i = 0; i < this.shopList.length; i++) {
+					if (this.shopList[i].id === id) {
+						return this.shopList[i]
+					}
+				}
+				return null
 			},
 			getNextShopId() {
 				let maxId = 0
@@ -391,12 +494,19 @@
 				return maxId + 1
 			},
 			requestUploadShopImage(imagePath) {
-				// TODO: 后续在这里请求后端上传店铺图片，并把返回的图片地址赋值给 createShopImage
+				// TODO: 后续在这里请求后端上传店铺图片，并把返回的图片地址赋值给 shopFormImage
+			},
+			requestUploadShopMenuImage(imagePath) {
+				// TODO: 后续在这里请求后端上传店铺菜单图片，并把返回的图片地址赋值给 shopFormMenuImage
 			},
 			requestCreateShop(shop) {
-				// TODO: 后续在这里请求后端新建店铺
+				// TODO: 后续在这里请求后端新建店铺，建议提交 name、image、menuImage、status。
+			},
+			requestUpdateShop(shop) {
+				// TODO: 后续在这里请求后端修改店铺名称、头像、菜单图片，建议提交 id、name、image、menuImage。
 			},
 			handleDeleteShopTap() {
+				// 后端对接点：这里只负责打开删除确认框，真正删除在 handleConfirmDeleteShop -> requestDeleteShop。
 				if (!this.canDeleteShop) {
 					return
 				}
@@ -411,6 +521,7 @@
 					this.showDeleteModal = false
 					return
 				}
+				// 后端对接点：确认删除后提交选中的店铺 id 列表。
 				this.requestDeleteShop(deleteIds)
 				const nextShopList = []
 				for (let i = 0; i < this.shopList.length; i++) {
@@ -424,15 +535,16 @@
 				this.syncShopStorage()
 			},
 			requestDeleteShop(ids) {
-				// TODO: 后续在这里请求后端删除店铺
+				// TODO: 后续在这里请求后端删除店铺，建议提交 ids 数组，后端批量删除。
 			},
 			handleToggleShopStatus(item) {
+				// 后端对接点：开关先更新本地状态，再在 handleShopStatusChange 同步后端。
 				item.status = !item.status
 				this.handleShopStatusChange(item)
 				this.syncShopStorage()
 			},
 			handleShopStatusChange(item) {
-				// TODO: 后续在这里请求后端修改店铺营业状态
+				// TODO: 后续在这里请求后端修改店铺营业状态，建议提交 id、status。
 			},
 			loadShopStorage() {
 				// TODO: 后续店铺数据改为后端维护，这里替换为 GET /shops
@@ -447,6 +559,7 @@
 						id: localShopList[i].id,
 						name: localShopList[i].name,
 						image: localShopList[i].image,
+						menuImage: localShopList[i].menuImage || '',
 						status: !!localShopList[i].status,
 						swipeOffset: 0,
 						isTouching: false,
@@ -463,6 +576,7 @@
 						id: this.shopList[i].id,
 						name: this.shopList[i].name,
 						image: this.shopList[i].image,
+						menuImage: this.shopList[i].menuImage || '',
 						status: this.shopList[i].status,
 					})
 				}
@@ -477,6 +591,49 @@
 				uni.navigateTo({
 					url: '/pages/index/manager/3'
 				})
+			},
+			
+			editStone() {
+				this.isEditShopMode = !this.isEditShopMode
+				if(this.isEditShopMode) {
+					uni.showToast({
+						icon: 'none',
+						title: '点击店铺卡片以编辑',
+						duration: 1000
+					})
+				}
+				else {
+					// 后端对接点：点击完成编辑。目前编辑店铺在弹窗确认时已提交，这里一般只退出编辑模式。
+					uni.showToast({
+						title: '完成编辑！',
+						duration: 1000
+					})
+				}
+			},
+			handleShopCardTap(item) {
+				if (this.ignoreNextShopTap) {
+					this.ignoreNextShopTap = false
+					if (this.ignoreShopTapTimer) {
+						clearTimeout(this.ignoreShopTapTimer)
+						this.ignoreShopTapTimer = null
+					}
+					return
+				}
+				if (!this.isEditShopMode) {
+					return
+				}
+				if (item.isSelectOpen) {
+					return
+				}
+				this.openEditShopModal(item)
+			},
+			openEditShopModal(item) {
+				this.shopFormMode = 'edit'
+				this.editingShopId = item.id
+				this.shopFormName = item.name
+				this.shopFormImage = item.image
+				this.shopFormMenuImage = item.menuImage || ''
+				this.showShopFormModal = true
 			}
 		}
 	}
